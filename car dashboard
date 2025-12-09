@@ -1,0 +1,930 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>משמר השכונה - מערכצ רכב</title>
+  <style>
+    :root {
+      --primary: #0077b6;   /* mavi */
+      --secondary: #00a896; /* yeşil */
+      --accent: #ffb703;    /* turuncu */
+      --bg-light: #f5f7fb;
+      --card-bg: #ffffff;
+      --text-main: #222;
+      --border-soft: #d0d7e2;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-light);
+      color: var(--text-main);
+    }
+
+    .topbar {
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-wrapper img {
+      height: 42px;
+      width: auto;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.15);
+      padding: 4px;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+
+    h3 {
+      margin-top: 24px;
+      font-size: 16px;
+    }
+
+    #filters {
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      align-items: center;
+    }
+
+    label {
+      margin-left: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    select, input[type="date"], input[type="text"] {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+      min-width: 150px;
+      font-size: 13px;
+    }
+
+    select:focus, input[type="date"]:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 1px rgba(0,168,150,0.2);
+    }
+
+    #summaryBox, #todayBox, #freeBox, #vehicleInfoBox {
+      margin-top: 10px;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      white-space: pre-line;
+      font-size: 14px;
+    }
+
+    #todayBox {
+      border-left: 4px solid var(--secondary);
+    }
+
+    #freeBox {
+      border-left: 4px solid var(--primary);
+    }
+
+    #vehicleInfoBox {
+      border-left: 4px solid var(--accent);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 12px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    th, td {
+      border: 1px solid var(--border-soft);
+      padding: 6px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    th {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .status-yes {
+      color: #0a8754;
+      font-weight: 600;
+    }
+
+    .status-no {
+      color: #c1121f;
+      font-weight: 600;
+    }
+
+    .status-konanut {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .car-status-bad {
+      color: #c1121f;
+      font-weight: 600;
+    }
+
+    .section-card {
+      margin-top: 20px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .section-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--secondary);
+    }
+
+    #vehicleImagePreview {
+      margin-top: 8px;
+      max-height: 120px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+    }
+
+    @media (max-width: 768px) {
+      #filters, .section-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      select, input[type="date"], input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo-wrapper">
+      <!-- LOGO DOSYAN -->
+      <img src="logo.png" alt="לוגו" />
+      <div>
+        <div class="title">משמר השכונה – הרצליה</div>
+        <div class="subtitle">מערכת רכבים, אזורים ומשמרות</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>מערכת רכבים</h2>
+
+    <div id="filters">
+      <div>
+        <label for="areaSelect">אזור:</label>
+        <select id="areaSelect">
+          <option value="">בחר אזור</option>
+          <option value="נווה עמל">נווה עמל</option>
+          <option value="מערב העיר">מערב העיר</option>
+          <option value="הרצליה הירוקה">הרצליה הירוקה</option>
+          <option value="גליל ים">גליל ים</option>
+          <option value="הרצליה הצעירה">הרצליה הצעירה</option>
+          <option value="הרצליה ב׳">הרצליה ב׳</option>
+          <option value="רכב כוננות">רכב כוננות</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="plateSelect">לוחית רישוי:</label>
+        <select id="plateSelect">
+          <option value="">בחר לוחית רישוי</option>
+          <option value="818-61-703">818-61-703</option>
+          <option value="740-15-003">740-15-003</option>
+          <option value="740-14-403">740-14-403</option>
+          <option value="740-14-603">740-14-603</option>
+          <option value="827-14-103">827-14-103</option>
+          <option value="818-61-603">818-61-603</option>
+          <option value="740-14-803">740-14-803</option>
+          <option value="827-13-903">827-13-903</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="ownerSelect">שייך ל:</label>
+        <select id="ownerSelect">
+          <option value="">בחר מחלקה</option>
+          <option value="מחלקת ביטחון">מחלקת ביטחון</option>
+          <option value="פיקוח עירוני מדור מרכז">פיקוח עירוני מדור מרכז</option>
+          <option value="פיקוח עירוני מדור צפון">פיקוח עירוני מדור צפון</option>
+          <option value="פיקוח עירוני">פיקוח עירוני</option>
+          <option value="רישוי עסקים">רישוי עסקים</option>
+          <option value="אין פעילות">אין פעילות</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="dateInput">תאריך:</label>
+        <input type="date" id="dateInput" />
+      </div>
+    </div>
+
+    <div id="summaryBox">
+      בחר תאריך, אזור, מחלקה או לוחית רישוי כדי לראות את המידע.
+    </div>
+
+    <div id="todayBox">
+      כאן תופיע רשימת הרכבים שבמשמרת לפי הבחירה (מי "במשמרת").
+    </div>
+
+    <div id="freeBox">
+      כאן תופיע רשימת הרכבים הפנויים/במצב זמין לפי התאריך שנבחר.
+    </div>
+
+    <table id="shiftTable">
+      <thead>
+        <tr>
+          <th>תאריך</th>
+          <th>אזור</th>
+          <th>לוחית רישוי</th>
+          <th>שייך ל</th>
+          <th>אחראי</th>
+          <th>סטטוס משמרת</th>
+          <th>סטטוס רכב</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>טבלת ביצועי משמרות (לפי הסינון)</h3>
+    <table id="performanceTable">
+      <thead>
+        <tr>
+          <th>לוחית רישוי</th>
+          <th>אזור</th>
+          <th>שייך ל</th>
+          <th>אחראי</th>
+          <th>מספר משמרות</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- ניהול סטטוס רכב ורכב חילופי -->
+    <div class="section-card">
+      <h3>ניהול סטטוס רכב ורכב חילופי</h3>
+      <div class="section-row">
+        <div>
+          <label for="statusPlateSelect">בחר רכב:</label>
+          <select id="statusPlateSelect">
+            <option value="">בחר לוחית רישוי</option>
+            <option value="818-61-703">818-61-703</option>
+            <option value="740-15-003">740-15-003</option>
+            <option value="740-14-403">740-14-403</option>
+            <option value="740-14-603">740-14-603</option>
+            <option value="827-14-103">827-14-103</option>
+            <option value="818-61-603">818-61-603</option>
+            <option value="740-14-803">740-14-803</option>
+            <option value="827-13-903">827-13-903</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="carStatusSelect">סטטוס רכב:</label>
+          <select id="carStatusSelect">
+            <option value="פעיל">פעיל</option>
+            <option value="תקול">תקול</option>
+            <option value="תאונה">תאונה</option>
+            <option value="במוסך">במוסך</option>
+            <option value="מושבת">מושבת</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div>
+          <label for="replacementPlateInput">רכב חילופי - לוחית:</label>
+          <input type="text" id="replacementPlateInput" placeholder="לוחית רכב חילופי" />
+        </div>
+        <div>
+          <label for="replacementModelInput">רכב חילופי - דגם/יצרן:</label>
+          <input type="text" id="replacementModelInput" placeholder="דגם / יצרן" />
+        </div>
+      </div>
+
+      <button id="updateStatusBtn">עדכן סטטוס</button>
+    </div>
+
+    <!-- פרופיל רכב (תמונה + מידע נוסף) -->
+    <div class="section-card">
+      <h3>פרופיל רכב (תמונה ומידע נוסף)</h3>
+      <div class="section-row">
+        <div>
+          <label for="profilePlateSelect">בחר רכב:</label>
+          <select id="profilePlateSelect">
+            <option value="">בחר לוחית רישוי</option>
+            <option value="818-61-703">818-61-703</option>
+            <option value="740-15-003">740-15-003</option>
+            <option value="740-14-403">740-14-403</option>
+            <option value="740-14-603">740-14-603</option>
+            <option value="827-14-103">827-14-103</option>
+            <option value="818-61-603">818-61-603</option>
+            <option value="740-14-803">740-14-803</option>
+            <option value="827-13-903">827-13-903</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="vehicleImageInput">תמונה:</label>
+          <input type="file" id="vehicleImageInput" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div>
+          <label for="fuelInput">סוג דלק:</label>
+          <input type="text" id="fuelInput" placeholder="בנזין / דיזל / חשמלי..." />
+        </div>
+        <div>
+          <label for="codeInput">קוד רכב / נר:</label>
+          <input type="text" id="codeInput" placeholder="קוד אם יש..." />
+        </div>
+        <div>
+          <label for="keyLocationInput">מיקום מפתח:</label>
+          <input type="text" id="keyLocationInput" placeholder="איפה המפתח נמצא?" />
+        </div>
+      </div>
+
+      <button id="saveProfileBtn">שמור פרופיל רכב (מקומי)</button>
+
+      <div id="vehicleInfoBox">
+        בחר רכב והזן פרטים. המידע נשמר רק באופן מקומי בדפדפן ולא נשמר במערכת חיצונית.
+      </div>
+      <img id="vehicleImagePreview" style="display:none;" />
+    </div>
+  </div>
+
+  <script>
+    // לוחית → אזור
+    const carToArea = {
+      "818-61-703": "נווה עמל",
+      "740-15-003": "מערב העיר",
+      "740-14-403": "הרצליה הירוקה",
+      "740-14-603": "הרצליה הירוקה",
+      "827-14-103": "גליל ים",
+      "818-61-603": "הרצליה הצעירה",
+      "740-14-803": "הרצליה ב׳",
+      "827-13-903": "רכב כוננות"
+    };
+
+    // מידע על שייך ל + אחראי לכל רכב
+    const carMeta = {
+      "818-61-703": { dept: "מחלקת ביטחון", person: "שארל קב\"ט" },
+      "740-15-003": { dept: "מחלקת ביטחון", person: "יגאל" },
+      "740-14-403": { dept: "פיקוח עירוני מדור מרכז", person: "" },
+      "740-14-603": { dept: "פיקוח עירוני מדור צפון", person: "" },
+      "827-14-103": { dept: "אין פעילות", person: "" },
+      "818-61-603": { dept: "מחלקת ביטחון", person: "בן קב\"ט" },
+      "740-14-803": { dept: "פיקוח עירוני", person: "" },
+      "827-13-903": { dept: "רישוי עסקים", person: "" }
+    };
+
+    // סטטוס מכני של רכב (ברירת מחדל: פעיל)
+    const carStatus = {
+      "818-61-703": "פעיל",
+      "740-15-003": "פעיל",
+      "740-14-403": "פעיל",
+      "740-14-603": "פעיל",
+      "827-14-103": "פעיל",
+      "818-61-603": "פעיל",
+      "740-14-803": "פעיל",
+      "827-13-903": "פעיל"
+    };
+
+    // רכב חילופי לכל לוחית (אם יש)
+    const carReplacement = {
+      // "740-15-003": { plate: "123-45-678", model: "Toyota Corolla" }
+    };
+
+    // פרופיל רכב (תמונה + מידע נוסף) – שמירה בזיכרון בלבד
+    const carProfile = {
+      // "818-61-703": { imageDataUrl: "...", fuel: "...", code: "...", keyLocation: "..." }
+    };
+
+    const areaSelect = document.getElementById("areaSelect");
+    const plateSelect = document.getElementById("plateSelect");
+    const ownerSelect = document.getElementById("ownerSelect");
+    const dateInput = document.getElementById("dateInput");
+    const summaryBox = document.getElementById("summaryBox");
+    const todayBox = document.getElementById("todayBox");
+    const freeBox = document.getElementById("freeBox");
+    const shiftTableBody = document.querySelector("#shiftTable tbody");
+    const perfTableBody = document.querySelector("#performanceTable tbody");
+
+    const statusPlateSelect = document.getElementById("statusPlateSelect");
+    const carStatusSelect = document.getElementById("carStatusSelect");
+    const replacementPlateInput = document.getElementById("replacementPlateInput");
+    const replacementModelInput = document.getElementById("replacementModelInput");
+    const updateStatusBtn = document.getElementById("updateStatusBtn");
+
+    const profilePlateSelect = document.getElementById("profilePlateSelect");
+    const vehicleImageInput = document.getElementById("vehicleImageInput");
+    const fuelInput = document.getElementById("fuelInput");
+    const codeInput = document.getElementById("codeInput");
+    const keyLocationInput = document.getElementById("keyLocationInput");
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
+    const vehicleInfoBox = document.getElementById("vehicleInfoBox");
+    const vehicleImagePreview = document.getElementById("vehicleImagePreview");
+
+    // דוגמה לנתוני משמרות – כאן אפשר להוסיף ימים וכו'
+    const shiftsData = [
+      {
+        date: "2025-11-24",
+        area: "נווה עמל",
+        plate: "818-61-703",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "מערב העיר",
+        plate: "740-15-003",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "הרצליה הירוקה",
+        plate: "740-14-403",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "גליל ים",
+        plate: "827-14-103",
+        status: "אין משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "הרצליה הצעירה",
+        plate: "818-61-603",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "הרצליה ב׳",
+        plate: "740-14-803",
+        status: "אין משמרת"
+      },
+      {
+        date: "2025-11-24",
+        area: "רכב כוננות",
+        plate: "827-13-903",
+        status: "כוננות בלבד"
+      },
+      {
+        date: "2025-11-25",
+        area: "מערב העיר",
+        plate: "740-15-003",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-25",
+        area: "הרצליה הירוקה",
+        plate: "740-14-603",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-25",
+        area: "גליל ים",
+        plate: "827-14-103",
+        status: "יש משמרת"
+      },
+      {
+        date: "2025-11-25",
+        area: "הרצליה ב׳",
+        plate: "740-14-803",
+        status: "יש משמרת"
+      }
+    ];
+
+    function statusClass(status) {
+      if (status === "יש משמרת") return "status-yes";
+      if (status === "אין משמרת") return "status-no";
+      if (status === "כוננות בלבד") return "status-konanut";
+      return "";
+    }
+
+    function carStatusClass(mechStatus) {
+      if (mechStatus && mechStatus !== "פעיל") return "car-status-bad";
+      return "";
+    }
+
+    function updateDashboard() {
+      const selectedDate = dateInput.value;
+      const selectedArea = areaSelect.value;
+      const selectedPlate = plateSelect.value;
+      const selectedDept = ownerSelect.value;
+
+      shiftTableBody.innerHTML = "";
+      perfTableBody.innerHTML = "";
+
+      let filtered = shiftsData;
+
+      if (selectedDate) {
+        filtered = filtered.filter(row => row.date === selectedDate);
+      }
+      if (selectedArea) {
+        filtered = filtered.filter(row => row.area === selectedArea);
+      }
+      if (selectedPlate) {
+        filtered = filtered.filter(row => row.plate === selectedPlate);
+      }
+      if (selectedDept) {
+        filtered = filtered.filter(row => {
+          const meta = carMeta[row.plate] || {};
+          return meta.dept === selectedDept;
+        });
+      }
+
+      if (!selectedDate && !selectedArea && !selectedPlate && !selectedDept) {
+        summaryBox.textContent = "בחר תאריך, אזור, מחלקה או לוחית רישוי כדי לראות את המידע.";
+        todayBox.textContent = "כאן תופיע רשימת הרכבים שבמשמרת לפי הבחירה (מי \"במשמרת\").";
+        freeBox.textContent = "כאן תופיע רשימת הרכבים הפנויים/במצב זמין לפי התאריך שנבחר.";
+        return;
+      }
+
+      if (filtered.length === 0) {
+        summaryBox.textContent = "לא נמצאו משמרות עבור הבחירה שבוצעה.";
+        todayBox.textContent = "אין רכבים במשמרת עבור הבחירה.";
+        freeBox.textContent = "אין מידע על רכבים פנויים עבור הבחירה.";
+        return;
+      }
+
+      // מילוי טבלת המשמרות
+      filtered.forEach(row => {
+        const tr = document.createElement("tr");
+
+        const tdDate = document.createElement("td");
+        tdDate.textContent = row.date;
+
+        const tdArea = document.createElement("td");
+        tdArea.textContent = row.area;
+
+        const tdPlate = document.createElement("td");
+        tdPlate.textContent = row.plate;
+
+        const meta = carMeta[row.plate] || {};
+        const tdDept = document.createElement("td");
+        tdDept.textContent = meta.dept || "";
+
+        const tdPerson = document.createElement("td");
+        tdPerson.textContent = meta.person || "";
+
+        const tdStatus = document.createElement("td");
+        tdStatus.textContent = row.status;
+        tdStatus.className = statusClass(row.status);
+
+        const mech = carStatus[row.plate] || "פעיל";
+        const tdCarStatus = document.createElement("td");
+        tdCarStatus.textContent = mech;
+        tdCarStatus.className = carStatusClass(mech);
+
+        tr.appendChild(tdDate);
+        tr.appendChild(tdArea);
+        tr.appendChild(tdPlate);
+        tr.appendChild(tdDept);
+        tr.appendChild(tdPerson);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdCarStatus);
+        shiftTableBody.appendChild(tr);
+      });
+
+      // סיכום כללי
+      const areasWithShifts = new Set(
+        filtered.filter(r => r.status === "יש משמרת").map(r => r.area)
+      );
+      const areasWithoutShifts = new Set(
+        filtered.filter(r => r.status === "אין משמרת").map(r => r.area)
+      );
+
+      let summaryText = "";
+
+      if (selectedDate) {
+        summaryText += `תאריך: ${selectedDate} | `;
+      }
+      if (selectedArea) {
+        summaryText += `אזור: ${selectedArea} | `;
+      }
+      if (selectedPlate) {
+        summaryText += `לוחית: ${selectedPlate} | `;
+      }
+      if (selectedDept) {
+        summaryText += `מחלקה: ${selectedDept} | `;
+      }
+
+      summaryText += `\nמספר משמרות בטבלה: ${filtered.length}.`;
+
+      if (areasWithShifts.size > 0) {
+        summaryText += `\nאזורים עם משמרת: ${Array.from(areasWithShifts).join(", ")}.`;
+      }
+      if (areasWithoutShifts.size > 0) {
+        summaryText += `\nאזורים ללא משמרת: ${Array.from(areasWithoutShifts).join(", ")}.`;
+      }
+
+      summaryBox.textContent = summaryText;
+
+      // מי במשמרת? (על פי הבחירה) – רק סטטוס "יש משמרת" ורכב במצב פעיל
+      const onDuty = filtered.filter(r => r.status === "יש משמרת" && (carStatus[r.plate] || "פעיל") === "פעיל");
+      if (onDuty.length === 0) {
+        todayBox.textContent = "אין כרגע רכבים במשמרת (\"יש משמרת\" וסטטוס רכב פעיל) לפי הבחירה.";
+      } else {
+        const lines = onDuty.map(row => {
+          const meta = carMeta[row.plate] || {};
+          const extra = [];
+          if (meta.dept) extra.push(meta.dept);
+          if (meta.person) extra.push(meta.person);
+          const mech = carStatus[row.plate] || "פעיל";
+          if (mech && mech !== "פעיל") extra.push(`סטטוס רכב: ${mech}`);
+          const extraText = extra.length ? ` (${extra.join(", ")})` : "";
+          return `${row.area} – ${row.plate}${extraText}`;
+        });
+        todayBox.textContent = "במשמרת לפי הבחירה:\n" + lines.join("\n");
+      }
+
+      // רכבים פנויים – לפי תאריך בלבד
+      if (selectedDate) {
+        const byDate = shiftsData.filter(r => r.date === selectedDate);
+        const allPlates = Object.keys(carToArea);
+        const busyPlates = new Set(
+          byDate.filter(r => r.status === "יש משמרת").map(r => r.plate)
+        );
+        const freePlates = allPlates.filter(p => !busyPlates.has(p) && (carStatus[p] || "פעיל") === "פעיל");
+
+        if (freePlates.length === 0) {
+          freeBox.textContent = "אין רכבים פנויים (על פי הנתונים והסטטוס המכני) בתאריך שנבחר.";
+        } else {
+          const lines = freePlates.map(p => {
+            const area = carToArea[p] || "";
+            const meta = carMeta[p] || {};
+            const extra = [];
+            if (meta.dept) extra.push(meta.dept);
+            if (meta.person) extra.push(meta.person);
+            const extraText = extra.length ? ` (${extra.join(", ")})` : "";
+            return `${area} – ${p}${extraText}`;
+          });
+          freeBox.textContent = "רכבים פנויים בתאריך שנבחר (אין להם משמרת והם במצב פעיל):\n" + lines.join("\n");
+        }
+      } else {
+        freeBox.textContent = "כדי לראות רכבים פנויים, בחר תאריך.";
+      }
+
+      // טבלת ביצועי משמרות – רק "יש משמרת"
+      const performanceMap = {};
+      filtered.forEach(row => {
+        if (row.status !== "יש משמרת") return;
+        const key = row.plate;
+        if (!performanceMap[key]) {
+          performanceMap[key] = {
+            plate: row.plate,
+            area: row.area,
+            count: 0
+          };
+        }
+        performanceMap[key].count += 1;
+      });
+
+      const perfEntries = Object.values(performanceMap).sort(
+        (a, b) => b.count - a.count
+      );
+
+      if (perfEntries.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "אין נתוני משמרות (\"יש משמרת\") עבור הבחירה.";
+        tr.appendChild(td);
+        perfTableBody.appendChild(tr);
+      } else {
+        perfEntries.forEach(p => {
+          const tr = document.createElement("tr");
+          const meta = carMeta[p.plate] || {};
+
+          const tdPlate = document.createElement("td");
+          tdPlate.textContent = p.plate;
+
+          const tdArea = document.createElement("td");
+          tdArea.textContent = p.area;
+
+          const tdDept = document.createElement("td");
+          tdDept.textContent = meta.dept || "";
+
+          const tdPerson = document.createElement("td");
+          tdPerson.textContent = meta.person || "";
+
+          const tdCount = document.createElement("td");
+          tdCount.textContent = p.count;
+
+          tr.appendChild(tdPlate);
+          tr.appendChild(tdArea);
+          tr.appendChild(tdDept);
+          tr.appendChild(tdPerson);
+          tr.appendChild(tdCount);
+          perfTableBody.appendChild(tr);
+        });
+      }
+    }
+
+    // שינוי לוחית → מעדכן אזור ומחלקה
+    plateSelect.addEventListener("change", function () {
+      const plate = this.value;
+      areaSelect.value = carToArea[plate] || "";
+      const meta = carMeta[plate] || {};
+      ownerSelect.value = meta.dept || "";
+      updateDashboard();
+    });
+
+    // שינוי אזור → בוחר לוחית ראשונה באזור ומחלקה
+    areaSelect.addEventListener("change", function () {
+      const area = this.value;
+      const platesForArea = Object.entries(carToArea)
+        .filter(([plate, a]) => a === area)
+        .map(([plate]) => plate);
+
+      plateSelect.value = platesForArea[0] || "";
+      const meta = carMeta[plateSelect.value] || {};
+      ownerSelect.value = meta.dept || "";
+      updateDashboard();
+    });
+
+    ownerSelect.addEventListener("change", updateDashboard);
+    if (dateInput) dateInput.addEventListener("change", updateDashboard);
+
+    // ניהול סטטוס רכב + רכב חילופי
+    updateStatusBtn.addEventListener("click", () => {
+      const plate = statusPlateSelect.value;
+      if (!plate) {
+        alert("בחר לוחית רישוי לעדכון סטטוס.");
+        return;
+      }
+      const newStatus = carStatusSelect.value;
+      carStatus[plate] = newStatus;
+
+      const replPlate = replacementPlateInput.value.trim();
+      const replModel = replacementModelInput.value.trim();
+      if (replPlate || replModel) {
+        carReplacement[plate] = {
+          plate: replPlate || "",
+          model: replModel || ""
+        };
+      } else {
+        delete carReplacement[plate];
+      }
+
+      alert("סטטוס הרכב עודכן (מקומית).");
+      updateDashboard();
+    });
+
+    // פרופיל רכב – טעינת נתונים אם קיימים
+    function loadVehicleProfile(plate) {
+      const profile = carProfile[plate];
+      if (!plate) {
+        vehicleInfoBox.textContent = "בחר רכב והזן פרטים. המידע נשמר רק באופן מקומי בדפדפן.";
+        vehicleImagePreview.style.display = "none";
+        fuelInput.value = "";
+        codeInput.value = "";
+        keyLocationInput.value = "";
+        return;
+      }
+
+      if (!profile) {
+        vehicleInfoBox.textContent = `אין עדיין פרופיל שמור עבור ${plate}.`;
+        vehicleImagePreview.style.display = "none";
+        fuelInput.value = "";
+        codeInput.value = "";
+        keyLocationInput.value = "";
+        return;
+      }
+
+      fuelInput.value = profile.fuel || "";
+      codeInput.value = profile.code || "";
+      keyLocationInput.value = profile.keyLocation || "";
+
+      let info = `פרופיל עבור ${plate}:\n`;
+      if (profile.fuel) info += `סוג דלק: ${profile.fuel}\n`;
+      if (profile.code) info += `קוד רכב / נר: ${profile.code}\n`;
+      if (profile.keyLocation) info += `מיקום מפתח: ${profile.keyLocation}\n`;
+      if (carReplacement[plate]) {
+        const r = carReplacement[plate];
+        info += `\nרכב חילופי: ${r.plate || ""} ${r.model || ""}`;
+      }
+      vehicleInfoBox.textContent = info;
+
+      if (profile.imageDataUrl) {
+        vehicleImagePreview.src = profile.imageDataUrl;
+        vehicleImagePreview.style.display = "block";
+      } else {
+        vehicleImagePreview.style.display = "none";
+      }
+    }
+
+    profilePlateSelect.addEventListener("change", () => {
+      loadVehicleProfile(profilePlateSelect.value);
+    });
+
+    // טעינת תמונה לרכב – FileReader לשימוש מקומי
+    vehicleImageInput.addEventListener("change", () => {
+      const plate = profilePlateSelect.value;
+      if (!plate) {
+        alert("בחר קודם רכב לפני טעינת תמונה.");
+        vehicleImageInput.value = "";
+        return;
+      }
+      const file = vehicleImageInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (!carProfile[plate]) carProfile[plate] = {};
+        carProfile[plate].imageDataUrl = e.target.result;
+        loadVehicleProfile(plate);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    saveProfileBtn.addEventListener("click", () => {
+      const plate = profilePlateSelect.value;
+      if (!plate) {
+        alert("בחר לוחית רישוי לפני שמירת הפרופיל.");
+        return;
+      }
+      if (!carProfile[plate]) carProfile[plate] = {};
+      carProfile[plate].fuel = fuelInput.value.trim();
+      carProfile[plate].code = codeInput.value.trim();
+      carProfile[plate].keyLocation = keyLocationInput.value.trim();
+
+      alert("פרופיל הרכב נשמר (מקומית, רק בדפדפן הנוכחי).");
+      loadVehicleProfile(plate);
+    });
+  </script>
+</body>
+</html>
